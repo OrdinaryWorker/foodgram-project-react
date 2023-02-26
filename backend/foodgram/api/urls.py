@@ -2,6 +2,8 @@ from django.urls import include, path
 from djoser.views import TokenDestroyView, UserViewSet, TokenCreateView
 from rest_framework.routers import DefaultRouter
 
+from api.views import CustomUserViewSet
+
 app_name = "api"
 
 router = DefaultRouter()
@@ -19,6 +21,17 @@ users_patterns = [
         r"set_password/",
         UserViewSet.as_view({"post": "set_password"}),
         name="set-password",
+    ),
+    path(
+        r"subscriptions/",
+        CustomUserViewSet.as_view({"get": "list"}),
+        name="subscriptions",
+    ),
+    path(
+        r"<int:author_id>/subscribe/",
+        CustomUserViewSet.as_view(
+            {"post": "create", "delete": "destroy"}),
+        name="subscribe",
     ),
 ]
 

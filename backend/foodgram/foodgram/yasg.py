@@ -1,7 +1,17 @@
+import os.path
+
 from rest_framework import permissions
 from django.urls import path, re_path
+from drf_yasg.generators import OpenAPISchemaGenerator
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+
+
+class SchemaGenerator(OpenAPISchemaGenerator):
+    def get_schema(self, request=None, public=True):
+        schema = super(SchemaGenerator, self).get_schema(request, public)
+        schema.basePath = os.path.join(schema.basePath, 'api/')
+
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -12,7 +22,7 @@ schema_view = get_schema_view(
         license=openapi.License(name="BSD License"),
     ),
     public=True,
-    permission_classes=[permissions.AllowAny],
+    permission_classes=[permissions.AllowAny]
 )
 
 urlpatterns = [
