@@ -52,7 +52,7 @@ class CustomUserViewSet(
         try:
             self.get_object()
         except Http404:
-            data = {"errors": "Нельзя отпистаться от того, на кого не подписан."}
+            data = {'errors': 'На данного пользователя не оформлена подписка.'}
             return JsonResponse(data, status=status.HTTP_400_BAD_REQUEST)
         return super().destroy(request, *args, **kwargs)
 
