@@ -12,9 +12,9 @@ class Ingredient(models.Model):
         max_length=settings.NAME_MAX_LENGTH,
         help_text='Введите название',
     )
-    measurement_unit = models.CharField(
+    units = models.CharField(
         verbose_name='Единицы измерения',
-        max_length=settings.MEASUREMENT_UNIT_MAX_LENGTH,
+        max_length=settings.UNITS_MAX_LENGTH,
         help_text='Введите единицы измерения',
     )
 
@@ -23,17 +23,17 @@ class Ingredient(models.Model):
         verbose_name_plural = 'Ингредиенты'
         ordering = (
             'name',
-            'measurement_unit',
+            'units',
         )
         constraints = [
             models.UniqueConstraint(
                 name='unique_ingredient',
-                fields=['name', 'measurement_unit'],
+                fields=['name', 'units'],
             ),
         ]
 
     def __str__(self) -> str:
-        return f'{self.name} - {self.measurement_unit}'
+        return f'{self.name}'
 
 
 class Tag(models.Model):
@@ -135,7 +135,7 @@ class Recipe(models.Model):
         Tag, related_name='recipes', verbose_name="Теги", help_text="Выберите теги"
     )
 
-    object = RecipeQuerySet.as_manager()
+    objects = RecipeQuerySet.as_manager()
 
     class Meta:
         verbose_name = "Рецепт"
