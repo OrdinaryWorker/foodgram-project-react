@@ -16,15 +16,15 @@ class IngredientAdmin(admin.ModelAdmin):
     list_display = (
         'pk',
         'name',
-        'units',
+        'measurement_unit',
     )
     list_editable = (
         'name',
-        'units',
+        'measurement_unit',
     )
     search_fields = (
         'name',
-        'units',
+        'measurement_unit',
     )
     list_filter = ('name',)
     empty_value_display = settings.ADMIN_MODEL_EMPTY_VALUE
