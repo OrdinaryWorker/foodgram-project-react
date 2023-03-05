@@ -33,7 +33,7 @@ class Ingredient(models.Model):
         ]
 
     def __str__(self) -> str:
-        return f'{self.name}'
+        return f'{self.name} - ({self.measurement_unit})'
 
 
 class Tag(models.Model):
@@ -65,7 +65,7 @@ class Tag(models.Model):
     )
 
     class Meta:
-        ordering = ('name',)
+        ordering = ('name',) #id?
         verbose_name = 'Тег'
         verbose_name_plural = 'Теги'
 
@@ -87,7 +87,8 @@ class RecipeQuerySet(models.QuerySet):
                     user_id=user_id, recipe__pk=models.OuterRef('pk')
                 )
             ),
-            is_in_shopping_card=models.Exists(
+            #Заменить везде card
+            is_in_shopping_cart=models.Exists(
                 ShoppingCart.objects.filter(
                     user_id=user_id, recipe__pk=models.OuterRef('pk')
                 )
@@ -110,11 +111,12 @@ class Recipe(models.Model):
         help_text="Выберите из списка автора",
     )
     name = models.CharField(
-        "Название", max_length=settings.NAME_MAX_LENGTH, help_text="Введите название"
+        max_length=settings.NAME_MAX_LENGTH,
+        help_text='Введите название'
     )
     image = models.ImageField(
         verbose_name="Картинка",
-        upload_to="recipes/",
+        upload_to="recipes/images/",
         help_text="Выберите картинку",
     )
     text = models.TextField(
@@ -128,12 +130,13 @@ class Recipe(models.Model):
         Ingredient,
         through="RecipeIngredient",
         through_fields=('recipe', 'ingredient'),
-        verbose_name="Ингредиенты",
-        help_text="Выберите ингредиенты",
+        verbose_name='Ингредиенты',
+        help_text='Выберите ингредиенты',
     )
     tags = models.ManyToManyField(
         Tag, related_name='recipes', verbose_name="Теги", help_text="Выберите теги"
     )
+    # slug = models.SlugField(verbose_name='Slug', default=None) # можно удалить??
 
     objects = RecipeQuerySet.as_manager()
 
@@ -142,8 +145,10 @@ class Recipe(models.Model):
         verbose_name_plural = "Рецепты"
         ordering = ("-pub_date",)
 
-    def __str__(self) -> str:
-        return f" {self.name}"
+    def __str__(self):
+        return self.name
+
+    # нужен ли метод save??
 
 
 class RecipeIngredient(models.Model):
@@ -184,6 +189,7 @@ class Favorite(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
+        related_name='favorites',
         verbose_name="Рецепт",
         help_text="Выберите рецепт",
     )

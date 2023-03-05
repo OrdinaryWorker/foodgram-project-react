@@ -52,7 +52,6 @@ class TagAdmin(admin.ModelAdmin):
 
 
 class RecipeIngredientInline(admin.TabularInline):
-    template = 'admin/edit_inline/custom_tabular.html'
     model = RecipeIngredient
     extra = 0
     min_num = 1
@@ -73,7 +72,7 @@ class RecipeAdmin(admin.ModelAdmin):
     @admin.display(description='Добавлений в избранное')
     def favorite_amount(self, obj):
         """Число добавлений рецепта в избранное для вывода в админке."""
-        return Favorite.objects.filter(recipe=obj).amount()
+        return Favorite.objects.filter(recipe=obj).count()
 
     @admin.display(description='Ингредиенты')
     def ingredients_in_recipe(self):

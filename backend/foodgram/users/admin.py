@@ -11,7 +11,7 @@ class UserAdmin(BaseUserAdmin):
     @admin.display(description="Количество подписчиков")
     def followers_amount(self, user):
         """Количество подписчиков для вывода в админке."""
-        return user.follower.count()
+        return user.followers.count()
     list_display = (
         "email",
         "username",

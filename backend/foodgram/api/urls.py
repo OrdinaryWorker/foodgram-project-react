@@ -1,11 +1,12 @@
 from django.urls import include, path
-from djoser.views import TokenDestroyView, TokenCreateView
+from djoser.views import TokenDestroyView, TokenCreateView, UserViewSet
 from rest_framework.routers import DefaultRouter
+
 
 from api.views import (
     CustomUserViewSet,
     IngredientViewSet,
-    RecipesViewSet,
+    RecipeViewSet,
     TagsViewSet,
 
 )
@@ -15,7 +16,7 @@ router = DefaultRouter()
 
 router.register(r"tags", TagsViewSet, basename="tags")
 router.register(r"ingredients", IngredientViewSet, basename="ingredients")
-router.register(r"recipes", RecipesViewSet, basename="recipes")
+router.register(r"recipes", RecipeViewSet, basename="recipes")
 
 
 auth_patterns = [
@@ -31,15 +32,15 @@ auth_patterns = [
 
 users_patterns = [
     path(r"",
-         CustomUserViewSet.as_view({"get": "list", "post": "create"}),
+         UserViewSet.as_view({"get": "list", "post": "create"}),
          name="users"
          ),
     path(r"<int:id>/",
-         CustomUserViewSet.as_view({"get": "retrieve"}),
+         UserViewSet.as_view({"get": "retrieve"}),
          name="user-detail"
          ),
     path(r"me/",
-         CustomUserViewSet.as_view({"get": "me"}),
+         UserViewSet.as_view({"get": "me"}),
          name="me-detail"
          ),
     path(
@@ -66,3 +67,5 @@ urlpatterns = [
     path(r"users/", include(users_patterns)),
     path(r"", include(router.urls)),
 ]
+
+

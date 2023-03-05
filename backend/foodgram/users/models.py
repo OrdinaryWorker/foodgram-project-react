@@ -58,18 +58,21 @@ class Follow(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name='followers',
+        # subscribed_to
         verbose_name='Пользователь'
     )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name='following',
+        # subscribed_by
         verbose_name='Автор'
     )
 
     class Meta:
         verbose_name = "Подписка"
         verbose_name_plural = "Подписки"
+        ordering = ('author_id', )
         constraints = [
             models.UniqueConstraint(
                 name='unique_follows',
