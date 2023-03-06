@@ -36,17 +36,6 @@ class CustomUserViewSet(
             Follow, user=self.request.user, author=self.get_author()
         )
 
-    def destroy(self, request, *args, **kwargs):
-        self.get_author()
-        try:
-            self.get_object()
-        except Http404:
-            data = {
-                'errors': 'На данного пользователя не была оформлена подписка.'
-            }
-            return JsonResponse(data, status=status.HTTP_400_BAD_REQUEST)
-        return super().destroy(request, *args, **kwargs)
-
     def get_serializer_class(self):
         if self.action in ('create', 'destroy'):
             return FollowSerializer
@@ -67,6 +56,17 @@ class CustomUserViewSet(
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
+
+    def destroy(self, request, *args, **kwargs):
+        self.get_author()
+        try:
+            self.get_object()
+        except Http404:
+            data = {
+                'errors': 'На данного пользователя не была оформлена подписка.'
+            }
+            return JsonResponse(data, status=status.HTTP_400_BAD_REQUEST)
+        return super().destroy(request, *args, **kwargs)
 
     def perform_create(self, serializer):
         serializer.save(author=self.get_author())
@@ -112,9 +112,6 @@ class RecipeViewSet(ModelViewSet, CreateAndDeleteMixin):
         else:
             return super().get_permissions()
 
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
-
     def get_serializer_class(self):
         if self.action in ('create', 'update', 'partial_update'):
             return RecipeCreateUpdateSerializer
@@ -139,15 +136,8 @@ class RecipeViewSet(ModelViewSet, CreateAndDeleteMixin):
             qs = qs.filter(author=author)
         return qs
 
-    @action(methods=['get', 'post', 'delete'], detail=True)
-    def shopping_cart(self, request, pk=None):
-        return self.create_and_delete_related(
-            pk=pk,
-            klass=ShoppingCart,
-            created_failed_message='Рецепт не добавлен в список покупок',
-            delete_failed_message='Рецепт отсутствует в списке покупок',
-            field_to_create_or_delete_name='recipe'
-        )
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
 
     @action(methods=['post', 'get', 'delete'], detail=True)
     def favorite(self, request, pk=None):
@@ -156,6 +146,16 @@ class RecipeViewSet(ModelViewSet, CreateAndDeleteMixin):
             klass=Favorite,
             created_failed_message='Рецепт не добавлен в избранное',
             delete_failed_message='Рецепт отсутствует в избранном',
+            field_to_create_or_delete_name='recipe'
+        )
+
+    @action(methods=['get', 'post', 'delete'], detail=True)
+    def shopping_cart(self, request, pk=None):
+        return self.create_and_delete_related(
+            pk=pk,
+            klass=ShoppingCart,
+            created_failed_message='Рецепт не добавлен в список покупок',
+            delete_failed_message='Рецепт отсутствует в списке покупок',
             field_to_create_or_delete_name='recipe'
         )
 

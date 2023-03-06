@@ -139,24 +139,6 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
         )
 
 
-class RecipeListSerializer(serializers.ModelSerializer):
-    tags = TagSerializer(many=True)
-    author = CustomUserSerializer()
-    image = Base64ImageField(max_length=None, use_url=True)
-    ingredients = serializers.SerializerMethodField()
-    is_favorited = serializers.BooleanField()
-    is_in_shopping_cart = serializers.BooleanField()
-
-    class Meta:
-        model = Recipe
-        exclude = ('pub_date', )
-
-    def get_ingredients(self, obj):
-        return RecipeIngredientSerializer(
-            RecipeIngredient.objects.filter(recipe=obj).all(), many=True
-        ).data
-
-
 class IngredientCreateInRecipeSerializer(serializers.ModelSerializer):
     recipe = serializers.PrimaryKeyRelatedField(read_only=True)
     id = serializers.PrimaryKeyRelatedField(
@@ -176,6 +158,24 @@ class TagsCreateInRecipeSerializer(serializers.ModelSerializer):
         fields = ('id', )
 
 
+class RecipeListSerializer(serializers.ModelSerializer):
+    tags = TagSerializer(many=True)
+    author = CustomUserSerializer()
+    image = Base64ImageField(max_length=None, use_url=True)
+    ingredients = serializers.SerializerMethodField()
+    is_favorited = serializers.BooleanField()
+    is_in_shopping_cart = serializers.BooleanField()
+
+    class Meta:
+        model = Recipe
+        exclude = ('pub_date', )
+
+    def get_ingredients(self, obj):
+        return RecipeIngredientSerializer(
+            RecipeIngredient.objects.filter(recipe=obj).all(), many=True
+        ).data
+
+
 class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
     ingredients = IngredientCreateInRecipeSerializer(many=True)
     tags = serializers.PrimaryKeyRelatedField(
@@ -189,12 +189,35 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         model = Recipe
         exclude = ('pub_date', )
 
-    def validate_ingredients(self, value):
-        if len(value) < 1:
+    def validate(self, attrs):
+        if len(attrs['tags']) == 0:
             raise serializers.ValidationError(
-                'Минимум один ингредиент должен быть в рецепте'
+                'Должен быть выбран хотя бы один тег.'
             )
-        return value
+        if len(attrs['tags']) != len(set(attrs['tags'])):
+            raise serializers.ValidationError(
+                'Теги должны быть уникальны.'
+            )
+        if len(attrs['ingredients']) == 0:
+            raise serializers.ValidationError(
+                'Должен быть выбран хотя бы один ингредиент.'
+            )
+        ingredients = attrs['ingredients']
+        if len(ingredients) != len(
+                set(obj['ingredient'] for obj in ingredients)
+        ):
+            raise serializers.ValidationError(
+                'Ингредиенты должны быть уникальны.'
+            )
+        if any(obj['amount'] <= 0 for obj in ingredients):
+            raise serializers.ValidationError(
+                'Количество ингредиента должно быть больше нуля.'
+            )
+        if attrs['cooking_time'] <= 0:
+            raise serializers.ValidationError(
+                'Время приготовления должно быть больше нуля.'
+            )
+        return super().validate(attrs)
 
     @transaction.atomic
     def create(self, validated_data):
@@ -213,6 +236,7 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         RecipeIngredient.objects.bulk_create(create_ingredients)
         return recipe
 
+    @transaction.atomic
     def update(self, instance, validated_data):
         ingredients = validated_data.pop('ingredients', None)
         tags = validated_data.pop('tags', None)

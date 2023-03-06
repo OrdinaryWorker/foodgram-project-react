@@ -29,21 +29,9 @@ def create_shopping_list_pdf(response, final_list):
     page.setFont('Slimamif', size=16)
     height = 750
     for i, (name, data) in enumerate(final_list.items(), 1):
-        page.drawString(75, height, (f'<{i}> {name} - {data["amount"]}, '
+        page.drawString(75, height, (f'{i}. {name} - {data["amount"]}, '
                                      f'{data["measurement_unit"]}'))
         height -= 25
     page.showPage()
     page.save()
     return response
-
-
-# Django==3.2.16
-# djangorestframework==3.14.0
-# djoser==2.1.0
-# drf-extra-fields==3.4.1
-# gunicorn==20.1.0
-# reportlab==3.6.12
-# Pillow==9.3.0
-# psycopg2-binary==2.9.5
-# python-dotenv==0.21.0
-# requests==2.28.1
