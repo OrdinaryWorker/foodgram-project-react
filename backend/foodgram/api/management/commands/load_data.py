@@ -2,8 +2,7 @@ import json
 
 from django.core.management.base import BaseCommand, CommandError
 
-from recipes.models import Ingredient
-from recipes.models import Tag
+from recipes.models import Ingredient, Tag
 
 TABLES = (
     (Ingredient, "ingredients.json"),

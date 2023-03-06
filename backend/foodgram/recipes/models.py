@@ -1,7 +1,8 @@
+from typing import List, Optional
+
 from django.conf import settings
 from django.core import validators
 from django.db import models
-from typing import List, Optional
 
 from users.models import User
 
@@ -65,7 +66,7 @@ class Tag(models.Model):
     )
 
     class Meta:
-        ordering = ('name',) #id?
+        ordering = ('name', )
         verbose_name = 'Тег'
         verbose_name_plural = 'Теги'
 
@@ -87,7 +88,6 @@ class RecipeQuerySet(models.QuerySet):
                     user_id=user_id, recipe__pk=models.OuterRef('pk')
                 )
             ),
-            #Заменить везде card
             is_in_shopping_cart=models.Exists(
                 ShoppingCart.objects.filter(
                     user_id=user_id, recipe__pk=models.OuterRef('pk')
@@ -98,85 +98,84 @@ class RecipeQuerySet(models.QuerySet):
 
 class Recipe(models.Model):
     pub_date = models.DateTimeField(
-        verbose_name="Дата создания",
+        verbose_name='Дата создания',
         auto_now_add=True,
         db_index=True,
-        help_text="Автоматически устанавливается текущая дата и время",
+        help_text='Автоматически устанавливается текущая дата и время',
     )
     author = models.ForeignKey(
         User,
         related_name='recipes',
         on_delete=models.CASCADE,
-        verbose_name="Автор",
-        help_text="Выберите из списка автора",
+        verbose_name='Автор',
+        help_text='Выберите из списка автора',
     )
     name = models.CharField(
         max_length=settings.NAME_MAX_LENGTH,
         help_text='Введите название'
     )
     image = models.ImageField(
-        verbose_name="Картинка",
-        upload_to="recipes/images/",
-        help_text="Выберите картинку",
+        verbose_name='Картинка',
+        upload_to='recipes/images/',
+        help_text='Выберите картинку',
     )
     text = models.TextField(
-        verbose_name="Текстовое описание", help_text="Введите текстовое описание"
+        verbose_name='Текстовое описание',
+        help_text='Введите текстовое описание'
     )
     cooking_time = models.PositiveIntegerField(
-        verbose_name="Время приготовления в минутах",
-        help_text="Введите время приготовления в минутах"
+        verbose_name='Время приготовления в минутах',
+        help_text='Введите время приготовления в минутах'
     )
     ingredients = models.ManyToManyField(
         Ingredient,
-        through="RecipeIngredient",
+        through='RecipeIngredient',
         through_fields=('recipe', 'ingredient'),
         verbose_name='Ингредиенты',
         help_text='Выберите ингредиенты',
     )
     tags = models.ManyToManyField(
-        Tag, related_name='recipes', verbose_name="Теги", help_text="Выберите теги"
+        Tag,
+        related_name='recipes',
+        verbose_name='Теги',
+        help_text='Выберите теги'
     )
-    # slug = models.SlugField(verbose_name='Slug', default=None) # можно удалить??
 
     objects = RecipeQuerySet.as_manager()
 
     class Meta:
-        verbose_name = "Рецепт"
-        verbose_name_plural = "Рецепты"
-        ordering = ("-pub_date",)
+        verbose_name = 'Рецепт'
+        verbose_name_plural = 'Рецепты'
+        ordering = ('-pub_date',)
 
     def __str__(self):
         return self.name
-
-    # нужен ли метод save??
 
 
 class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        verbose_name="Рецепт",
-        help_text="Выберите рецепт",
+        verbose_name='Рецепт',
+        help_text='Выберите рецепт',
     )
     ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
-        verbose_name="Ингредиент рецепта",
-        help_text="Выберите ингредиент рецепта",
+        verbose_name='Ингредиент рецепта',
+        help_text='Выберите ингредиент рецепта',
     )
     amount = models.PositiveSmallIntegerField(
-        verbose_name="Количество ингредиента",
-        help_text="Введите количество ингредиента"
+        verbose_name='Количество ингредиента',
+        help_text='Введите количество ингредиента'
     )
 
     class Meta:
-        verbose_name = "Ингредиент в рецепте"
-        verbose_name_plural = "Ингредиенты в рецептах"
+        verbose_name = 'Ингредиент в рецепте'
+        verbose_name_plural = 'Ингредиенты в рецептах'
 
     def __str__(self) -> str:
-        return (
-            f"{self.ingredient.name} — {self.amount}"
-        )
+        return f'{self.ingredient.name} — {self.amount}'
 
 
 class Favorite(models.Model):
@@ -190,19 +189,19 @@ class Favorite(models.Model):
         Recipe,
         on_delete=models.CASCADE,
         related_name='favorites',
-        verbose_name="Рецепт",
-        help_text="Выберите рецепт",
+        verbose_name='Рецепт',
+        help_text='Выберите рецепт',
     )
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                name="unique_favorite_user_recipe",
-                fields=["user", "recipe"],
+                name='unique_favorite_user_recipe',
+                fields=['user', 'recipe'],
             ),
         ]
-        verbose_name = "Любимый рецепт"
-        verbose_name_plural = "Любимые рецепты"
+        verbose_name = 'Любимый рецепт'
+        verbose_name_plural = 'Любимые рецепты'
 
     def __str__(self):
         return f'Избранный {self.recipe} у {self.user}'
@@ -219,18 +218,18 @@ class ShoppingCart(models.Model):
         Recipe,
         on_delete=models.CASCADE,
         related_name='shopping_carts',
-        verbose_name="Рецепт",
+        verbose_name='Рецепт'
     )
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                name="unique_shopping_cart_user_recipe",
-                fields=["user", "recipe"],
+                name='unique_shopping_cart_user_recipe',
+                fields=['user', 'recipe'],
             ),
         ]
-        verbose_name = "Любимый рецепт"
-        verbose_name_plural = "Любимые рецепты"
+        verbose_name = 'Любимый рецепт'
+        verbose_name_plural = 'Любимые рецепты'
 
     def __str__(self):
         return f'В списке покупок {self.recipe} у {self.user}'

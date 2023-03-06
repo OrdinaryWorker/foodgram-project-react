@@ -5,51 +5,51 @@ from django.db import models
 
 
 class User(AbstractUser):
-    USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["username", "first_name", "last_name"]
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
 
     username = models.CharField(
-        "Имя пользователя",
+        verbose_name='Имя пользователя',
         max_length=settings.USERNAME_MAX_LENGTH,
         unique=True,
         help_text=(
-            "Введите уникальное имя пользователя. Максимум 40 символов. "
-            "Используйте только английские буквы, цифры и символы @/./+/-/_"
+            'Введите уникальное имя пользователя. Максимум 40 символов.'
+            'Используйте только английские буквы, цифры и символы @/./+/-/_'
         ),
         validators=[ASCIIUsernameValidator()],
         error_messages={
-            "unique": "Пользователь с таким именем уже существует",
+            'unique': 'Пользователь с таким именем уже существует',
         },
     )
     email = models.EmailField(
-        "Электронная почта",
+        verbose_name='Электронная почта',
         max_length=settings.EMAIL_MAX_LENGTH,
         unique=True,
-        help_text="Введите адрес электронной почты",
+        help_text='Введите адрес электронной почты',
         validators=[ASCIIUsernameValidator()],
         error_messages={
-            "unique": "Пользователь с такой почтой уже существует",
+            'unique': 'Пользователь с такой почтой уже существует',
         },
     )
     last_name = models.CharField(
-        "Фамилия",
+        verbose_name='Фамилия',
         max_length=settings.LAST_NAME_MAX_LENGTH,
-        help_text="Введите фамилию"
+        help_text='Введите фамилию'
     )
 
     first_name = models.CharField(
-        "Имя",
+        verbose_name='Имя',
         max_length=settings.FIRST_NAME_MAX_LENGTH,
-        help_text="Введите имя"
+        help_text='Введите имя'
     )
 
     class Meta:
-        ordering = ("email",)
-        db_table = "auth_user"
-        verbose_name = "Пользователь"
-        verbose_name_plural = "Пользователи"
+        ordering = ('email', )
+        db_table = 'auth_user'
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
 
-    def __str__(self) -> str:
+    def __str__(self):
         return self.get_username()
 
 
@@ -58,14 +58,12 @@ class Follow(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name='followers',
-        # subscribed_to
         verbose_name='Пользователь'
     )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name='following',
-        # subscribed_by
         verbose_name='Автор'
     )
 

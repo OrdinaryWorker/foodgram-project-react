@@ -1,13 +1,11 @@
-import base64
-
 from django.conf import settings
-from drf_extra_fields.fields import Base64ImageField
-from djoser.serializers import UserSerializer, UserCreateSerializer
-from rest_framework import serializers
 from django.db import transaction
+from djoser.serializers import UserCreateSerializer, UserSerializer
+from drf_extra_fields.fields import Base64ImageField
+from rest_framework import serializers
 
-from users.models import User, Follow
-from recipes.models import Recipe, Tag, RecipeIngredient, Ingredient
+from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
+from users.models import Follow, User
 
 
 class CustomUserSerializer(UserSerializer):
@@ -43,8 +41,6 @@ class CustomUserCreateSerializer(UserCreateSerializer):
                   'password'
                   )
 
-# Не нужен
-
 
 class FollowSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
@@ -69,9 +65,6 @@ class FollowSerializer(serializers.ModelSerializer):
                 'Нельзя подписаться дважды на одного пользователя!'
             )
         return data
-
-
-#######
 
 
 class RecipeMinifiedSerializer(serializers.ModelSerializer):
@@ -138,38 +131,29 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RecipeIngredient
-        # exclude = (
-        #     "recipe",
-        #     "ingredient",
-        # )
         fields = (
+            'id',
             'amount',
             'name',
-            'measurement_unit',
-            'id'
+            'measurement_unit'
         )
 
 
 class RecipeListSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True)
-    author = CustomUserSerializer() # read_only=True ??
-    image = Base64ImageField(max_length=None, use_url=True) # нужно ли??
+    author = CustomUserSerializer()
+    image = Base64ImageField(max_length=None, use_url=True)
     ingredients = serializers.SerializerMethodField()
-    is_favorited = serializers.BooleanField() #default=None ??
-    is_in_shopping_cart = serializers.BooleanField() #default=None ??
+    is_favorited = serializers.BooleanField()
+    is_in_shopping_cart = serializers.BooleanField()
 
     class Meta:
         model = Recipe
-#        exclude = ('pub_date', )
-        exclude = (
-            # "slug",
-            "pub_date",
-        )
+        exclude = ('pub_date', )
 
     def get_ingredients(self, obj):
         return RecipeIngredientSerializer(
-            RecipeIngredient.objects.filter(
-                recipe=obj).all(), many=True
+            RecipeIngredient.objects.filter(recipe=obj).all(), many=True
         ).data
 
 
@@ -183,13 +167,13 @@ class IngredientCreateInRecipeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RecipeIngredient
-        fields = ('recipe', 'id', 'amount')
+        fields = ('id', 'recipe', 'amount')
 
 
 class TagsCreateInRecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
-        fields = ('id',)
+        fields = ('id', )
 
 
 class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
@@ -203,23 +187,13 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        # fields = (
-        #     "ingredients",
-        #     "tags",
-        #     "author",
-        #     "image",
-        #     "name",
-        #     "text",
-        #     "cooking_time",
-        # )
-        exclude = (
-            # "slug",
-            "pub_date",
-        )
+        exclude = ('pub_date', )
 
     def validate_ingredients(self, value):
         if len(value) < 1:
-            raise serializers.ValidationError('Минимум один ингредиент должен быть в рецепте')
+            raise serializers.ValidationError(
+                'Минимум один ингредиент должен быть в рецепте'
+            )
         return value
 
     @transaction.atomic
@@ -236,9 +210,7 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
             )
             for ingredient in ingredients
         ]
-        RecipeIngredient.objects.bulk_create(
-            create_ingredients
-        )
+        RecipeIngredient.objects.bulk_create(create_ingredients)
         return recipe
 
     def update(self, instance, validated_data):
@@ -257,9 +229,7 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
                 )
                 for ingredient in ingredients
             ]
-            RecipeIngredient.objects.bulk_create(
-                create_ingredients
-            )
+            RecipeIngredient.objects.bulk_create(create_ingredients)
         return super().update(instance, validated_data)
 
     def to_representation(self, obj):

@@ -1,14 +1,8 @@
 from django.conf import settings
 from django.contrib import admin
 
-from .models import (
-    Ingredient,
-    Tag,
-    Recipe,
-    RecipeIngredient,
-    Favorite,
-    ShoppingCart
-)
+from .models import (Favorite, Ingredient, Recipe, RecipeIngredient,
+                     ShoppingCart, Tag)
 
 
 @admin.register(Ingredient)
@@ -79,10 +73,18 @@ class RecipeAdmin(admin.ModelAdmin):
         """Ингредиенты рецепта для вывода в админке."""
         return ", ".join(map(str, self.recipeingredient_set.all()))
 
-    list_display = ('name', 'author', 'pub_date', 'favorite_amount')
+    list_display = (
+        'name',
+        'author',
+        'pub_date',
+        'favorite_amount'
+    )
     search_fields = ('name', )
     filter_horizontal = ('tags', )
-    list_filter = ('tags', 'author')
+    list_filter = (
+        'tags',
+        'author'
+    )
     autocomplete_fields = ('ingredients', )
     inlines = (RecipeIngredientInline, )
     readonly_fields = ('favorite_amount', )
@@ -102,5 +104,3 @@ class RecipeIngredientAdmin(admin.ModelAdmin):
         'ingredient',
     )
     empty_value_display = settings.ADMIN_MODEL_EMPTY_VALUE
-
-
