@@ -19,11 +19,14 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-(rw0$2uqpns%6f=-+cgt++j8&d1=c&rb(7nxf$^%%b%c+9#gq7'
+SECRET_KEY = os.getenv(
+    'DJANGO_SECRET_KEY',
+    'django-insecure-(rw0$2uqpns%6f=-+cgt++j8&d1=c&rb(7nxf$^%%b%c+9#gq7',
+)
 
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split()
 
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_URLS_REGEX = r'^/api/.*$'
@@ -36,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     "rest_framework",
+    'django_filters',
     'corsheaders',
     "rest_framework.authtoken",
     "djoser",
@@ -79,7 +83,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'foodgram.wsgi.application'
 
-if DEBUG:
+if os.getenv('USE_SQLITE', 'True') == 'True':
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
@@ -147,11 +151,11 @@ USE_L10N = True
 
 USE_TZ = True
 
-STATIC_URL = '/static/'
+STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 PDF_APP_STATIC = os.path.join(STATIC_ROOT, 'fonts')
 
-MEDIA_URL = '/'
+MEDIA_URL = 'media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

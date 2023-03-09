@@ -1,12 +1,14 @@
-from django.db.models import F, Q, Sum
+from django.db.models import F, Sum
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
+from api.filters import IngredientFilter, RecipeFilter
 from api.mixins import CreateAndDeleteMixin
 from api.permissions import IsAuthorOrReadOnly
 from api.serializers import (FollowSerializer, IngredientSerializer,
@@ -83,22 +85,16 @@ class TagsViewSet(ModelViewSet):
 class IngredientViewSet(ModelViewSet):
     serializer_class = IngredientSerializer
     pagination_class = None
-
-    def get_queryset(self):
-        queryset = Ingredient.objects.all()
-        name = self.request.query_params.get('name')
-        if name is not None:
-            qs_starts = queryset.filter(name__istartswith=name)
-            qs_contains = queryset.filter(
-                ~Q(name__istartswith=name) & Q(name__icontains=name)
-            )
-            queryset = list(qs_starts) + list(qs_contains)
-        return queryset
+    queryset = Ingredient.objects.all()
+    filter_backends = [IngredientFilter, ]
+    search_fields = ['^name', ]
 
 
 class RecipeViewSet(ModelViewSet, CreateAndDeleteMixin):
     queryset = Recipe.objects.all()
     http_method_names = ['get', 'post', 'patch', 'delete']
+    filter_backends = [DjangoFilterBackend, ]
+    filterset_class = RecipeFilter
 
     def get_permissions(self):
         if self.action in (
@@ -109,32 +105,14 @@ class RecipeViewSet(ModelViewSet, CreateAndDeleteMixin):
             return [IsAuthenticated(), ]
         elif self.action == 'destroy':
             return [IsAuthorOrReadOnly(), ]
-        else:
-            return super().get_permissions()
+        return super().get_permissions()
 
     def get_serializer_class(self):
         if self.action in ('create', 'update', 'partial_update'):
             return RecipeCreateUpdateSerializer
         elif self.action in ('shopping_cart', 'favorite'):
             return RecipeMinifiedSerializer
-        else:
-            return RecipeListSerializer
-
-    def get_queryset(self):
-        tags = self.request.query_params.getlist('tags')
-        user = self.request.user
-        qs = Recipe.objects
-        if tags:
-            qs = qs.filter_by_tags(tags)
-        qs = qs.add_user_annotation(user.pk)
-        if self.request.query_params.get('is_favorited'):
-            qs = qs.filter(is_favorited=True)
-        if self.request.query_params.get('is_in_shopping_cart'):
-            qs = qs.filter(is_in_shopping_cart=True)
-        author = self.request.query_params.get('author', None)
-        if author:
-            qs = qs.filter(author=author)
-        return qs
+        return RecipeListSerializer
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)

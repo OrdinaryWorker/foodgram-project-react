@@ -1,5 +1,3 @@
-from typing import List, Optional
-
 from django.conf import settings
 from django.core import validators
 from django.db import models
@@ -74,28 +72,6 @@ class Tag(models.Model):
         return self.name
 
 
-class RecipeQuerySet(models.QuerySet):
-
-    def filter_by_tags(self, tags: List[str]):
-        if tags:
-            return self.filter(tags__slug__in=tags).distinct()
-        return self
-
-    def add_user_annotation(self, user_id: Optional[int]):
-        return self.annotate(
-            is_favorited=models.Exists(
-                Favorite.objects.filter(
-                    user_id=user_id, recipe__pk=models.OuterRef('pk')
-                )
-            ),
-            is_in_shopping_cart=models.Exists(
-                ShoppingCart.objects.filter(
-                    user_id=user_id, recipe__pk=models.OuterRef('pk')
-                )
-            )
-        )
-
-
 class Recipe(models.Model):
     pub_date = models.DateTimeField(
         verbose_name='Дата создания',
@@ -140,8 +116,6 @@ class Recipe(models.Model):
         verbose_name='Теги',
         help_text='Выберите теги'
     )
-
-    objects = RecipeQuerySet.as_manager()
 
     class Meta:
         verbose_name = 'Рецепт'

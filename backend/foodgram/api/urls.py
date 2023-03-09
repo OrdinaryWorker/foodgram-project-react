@@ -9,54 +9,54 @@ app_name = 'api'
 
 router = DefaultRouter()
 
-router.register(r'tags', TagsViewSet, basename='tags')
-router.register(r'ingredients', IngredientViewSet, basename='ingredients')
-router.register(r'recipes', RecipeViewSet, basename='recipes')
+router.register('tags', TagsViewSet, basename='tags')
+router.register('ingredients', IngredientViewSet, basename='ingredients')
+router.register('recipes', RecipeViewSet, basename='recipes')
 
 auth_patterns = [
-    path(r'token/login/',
+    path('token/login/',
          TokenCreateView.as_view(),
          name='login'
          ),
-    path(r'token/logout/',
+    path('token/logout/',
          TokenDestroyView.as_view(),
          name='logout'
          ),
 ]
 
 users_patterns = [
-    path(r'',
-         UserViewSet.as_view({'get': 'list', 'post': 'create'}),
-         name='users'
-         ),
     path('<int:id>/',
          UserViewSet.as_view({'get': 'retrieve'}),
          name='user-detail'
          ),
-    path(r'me/',
+    path('me/',
          UserViewSet.as_view({'get': 'me'}),
          name='me-detail'
          ),
     path(
-        r'set_password/',
+        'set_password/',
         CustomUserViewSet.as_view({'post': 'set_password'}),
         name='set-password',
         ),
     path(
-        r'subscriptions/',
+        'subscriptions/',
         CustomUserViewSet.as_view({'get': 'list'}),
         name='subscriptions',
         ),
     path(
-        r'<int:author_id>/subscribe/',
+        '<int:author_id>/subscribe/',
         CustomUserViewSet.as_view(
             {'post': 'create', 'delete': 'destroy'}),
         name='subscribe',
         ),
+    path('',
+         UserViewSet.as_view({'get': 'list', 'post': 'create'}),
+         name='users'
+         ),
 ]
 
 urlpatterns = [
-    path(r'auth/', include(auth_patterns)),
-    path(r'users/', include(users_patterns)),
-    path(r'', include(router.urls)),
+    path('auth/', include(auth_patterns)),
+    path('users/', include(users_patterns)),
+    path('', include(router.urls)),
 ]

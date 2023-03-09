@@ -42,8 +42,7 @@ class CreateAndDeleteMixin:
 
             if klass_obj is None:
                 raise ValidationError({'errors': delete_failed_message})
-            else:
-                klass_obj.delete()
+            klass_obj.delete()
 
             response = Response(status=status.HTTP_204_NO_CONTENT)
         else:
