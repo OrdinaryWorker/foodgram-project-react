@@ -58,7 +58,10 @@ jobs:
             echo ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }} >> .env
             echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
             sudo docker-compose up -d
-
+            sudo docker-compose exec -it backend python manage.py makemigrations
+            sudo docker-compose exec -it backend python manage.py migrate
+            sudo docker-compose exec -it backend python manage.py collectstatic --noinput
+            sudo docker-compose exec -it backend python manage.py dumpdata > fixtures.json
             
   send_message:
     runs-on: ubuntu-latest
