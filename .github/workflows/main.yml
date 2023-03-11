@@ -57,7 +57,7 @@ jobs:
             echo DEVELOPMENT=${{ secrets.DEVELOPMENT }} >> .env
             echo ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }} >> .env
             echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
-
+            sudo docker-compose up -d
             
   send_message:
     runs-on: ubuntu-latest
