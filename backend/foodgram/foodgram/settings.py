@@ -83,7 +83,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'foodgram.wsgi.application'
 
-if os.getenv('USE_SQLITE', 'True') == 'True':
+if os.getenv('DEVELOPMENT', 'True') == 'True':
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
@@ -153,15 +153,15 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-PDF_APP_STATIC = os.path.join(STATIC_ROOT, 'fonts')
 
 MEDIA_URL = 'media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-EMAIL_BACKEND = 'django.core.mail.backends.EmailBackend'
-EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
+if os.getenv('DEVELOPMENT', 'True') == 'True':
+    EMAIL_BACKEND = 'django.core.mail.backends.EmailBackend'
+    EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
 
 AUTH_USER_MODEL = 'users.User'
 

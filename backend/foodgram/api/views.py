@@ -15,7 +15,8 @@ from api.serializers import (FollowSerializer, IngredientSerializer,
                              RecipeCreateUpdateSerializer,
                              RecipeListSerializer, RecipeMinifiedSerializer,
                              TagSerializer, UserExtendedSerializer)
-from api.utils import create_shopping_list_pdf, get_data_for_shopping_list
+from api.utils.utils import (create_shopping_list_pdf,
+                             get_data_for_shopping_list)
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             ShoppingCart, Tag)
 from users.models import Follow, User
