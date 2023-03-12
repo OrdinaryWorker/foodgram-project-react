@@ -10,9 +10,6 @@ services:
 
   frontend:
     image: takoijekakvse/foodgram_frontend
-#    build:
-#      context: ../frontend
-#      dockerfile: Dockerfile
     volumes:
       - ../frontend/:/app/result_build/
       - static_value:/app/result_build/build/static/
@@ -21,9 +18,6 @@ services:
 
   backend:
     image: takoijekakvse/foodgram_backend
-#    build:
-#      context: ../backend/foodgram
-#      dockerfile: Dockerfile
     restart: always
     volumes:
       - static_value:/app/static/
